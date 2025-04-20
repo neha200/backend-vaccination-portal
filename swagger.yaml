@@ -1,0 +1,390 @@
+openapi: 3.0.0
+info:
+  title: Vaccination Portal API
+  description: API documentation for the School Vaccination Portal
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000
+    description: Local development server
+
+paths:
+  /login:
+    post:
+      summary: Login and get a JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+        '400':
+          description: Missing username or password
+        '401':
+          description: Invalid credentials
+
+  /register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+              required:
+                - username
+                - password
+                - role
+      responses:
+        '201':
+          description: User registered successfully
+        '400':
+          description: Username already exists or missing fields
+
+  /students:
+    get:
+      summary: List all students
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                    username:
+                      type: string
+                    class_grade:
+                      type: string
+                    student_id:
+                      type: string
+                    is_vaccinated:
+                      type: boolean
+                    vaccine_name:
+                      type: string
+                    date_of_vaccination:
+                      type: string
+                      format: date
+    post:
+      summary: Add a new student
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                class_grade:
+                  type: string
+                student_id:
+                  type: string
+              required:
+                - username
+                - class_grade
+                - student_id
+      responses:
+        '201':
+          description: Student added successfully
+        '400':
+          description: Student ID already exists or missing fields
+
+  /students/bulk:
+    post:
+      summary: Bulk upload students via CSV
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Students added successfully
+        '400':
+          description: No file uploaded
+
+  /students/{id}/vaccinate:
+    put:
+      summary: Mark a student as vaccinated
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vaccine_name:
+                  type: string
+                date_of_vaccination:
+                  type: string
+                  format: date
+              required:
+                - vaccine_name
+                - date_of_vaccination
+      responses:
+        '200':
+          description: Student vaccinated successfully
+        '404':
+          description: Student not found
+        '400':
+          description: Already vaccinated
+
+  /drives:
+    get:
+      summary: List all vaccination drives
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of vaccination drives
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                    vaccine_name:
+                      type: string
+                    date:
+                      type: string
+                      format: date
+                    available_doses:
+                      type: integer
+                    classes:
+                      type: array
+                      items:
+                        type: string
+                    is_completed:
+                      type: boolean
+    post:
+      summary: Create a new vaccination drive
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vaccine_name:
+                  type: string
+                date:
+                  type: string
+                  format: date
+                available_doses:
+                  type: integer
+                classes:
+                  type: array
+                  items:
+                    type: string
+                is_completed:
+                  type: boolean
+              required:
+                - vaccine_name
+                - date
+                - available_doses
+                - classes
+      responses:
+        '201':
+          description: Drive created successfully
+        '400':
+          description: Validation error
+
+  /drives/{id}:
+    put:
+      summary: Update a vaccination drive
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vaccine_name:
+                  type: string
+                date:
+                  type: string
+                  format: date
+                available_doses:
+                  type: integer
+                classes:
+                  type: array
+                  items:
+                    type: string
+                is_completed:
+                  type: boolean
+      responses:
+        '200':
+          description: Drive updated successfully
+        '404':
+          description: Drive not found
+    delete:
+      summary: Delete a vaccination drive
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Drive deleted successfully
+        '404':
+          description: Drive not found
+
+  /drives/by-class:
+    get:
+      summary: Get vaccination drives by class grade
+      description: Retrieve all vaccination drives that include the specified class grade.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: class_grade
+          in: query
+          required: true
+          description: The class grade to filter vaccination drives (e.g., "5A").
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of vaccination drives for the specified class grade
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                      description: The unique ID of the vaccination drive.
+                    vaccine_name:
+                      type: string
+                      description: The name of the vaccine.
+                    date:
+                      type: string
+                      format: date
+                      description: The date of the vaccination drive.
+                    available_doses:
+                      type: integer
+                      description: The number of available doses for the drive.
+                    classes:
+                      type: array
+                      items:
+                        type: string
+                      description: The list of class grades included in the drive.
+                    is_completed:
+                      type: boolean
+                      description: Whether the vaccination drive is completed.
+        '400':
+          description: Class grade is required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: "Class grade is required"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: "Internal server error"
+
+  /analytics:
+    get:
+      summary: Fetch analytics data
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Analytics data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_students:
+                    type: integer
+                  vaccinated_students:
+                    type: integer
+                  total_drives:
+                    type: integer
+                  available_doses:
+                    type: integer
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
