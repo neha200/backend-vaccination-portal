@@ -97,6 +97,7 @@ backend/
 ├── students.csv              # Sample student data for seeding
 ├── users.csv                 # Sample user data for seeding
 ├── vaccination_drives.csv    # Sample vaccination drive data for seeding
+├── swagger.yaml              # API documentation
 
 ```
 
@@ -126,6 +127,7 @@ backend/
 - `POST /drives`: Create a new drive.
 - `PUT /drives/<id>`: Update a drive.
 - `DELETE /drives/<id>`: Delete a drive.
+- `GET /drives/by-class`: Filter drives for student to register based on class
 
 ### **Analytics**
 - `GET /analytics`: Fetch dashboard analytics.

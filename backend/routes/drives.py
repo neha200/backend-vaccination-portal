@@ -54,7 +54,11 @@ def list_drives():
     drives = mongo.db.vaccination_drives.find()
     formatted_drives = []
     for drive in drives:
-        drive["date"] = drive["date"].isoformat()  # Convert to ISO string
+        drive["_id"] = str(drive["_id"])  # Convert ObjectId to string
+        if isinstance(drive["date"], str):
+            drive["date"] = drive["date"]  # Keep it as is
+        else:
+            drive["date"] = drive["date"].isoformat()  # Convert datetime to ISO string
         formatted_drives.append(drive)
 
     return jsonify(formatted_drives)
@@ -63,17 +67,27 @@ def list_drives():
 @jwt_required()
 @role_required('admin')
 def update_drive(id):
+    try:
+        # Validate the ObjectId
+        object_id = ObjectId(id)
+    except InvalidId:
+        return jsonify(msg="Invalid drive ID"), 400
+
     data = request.json
-    mongo.db.vaccination_drives.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": {
-            "vaccine_name": data["vaccine_name"],
-            "date": data["date"],
-            "available_doses": int(data["available_doses"]),
-            "classes": data["classes"].split(",")  # Convert comma-separated string to list
-        }}
-    )
-    return jsonify(msg="Drive updated successfully"), 200
+    try:
+        mongo.db.vaccination_drives.update_one(
+            {"_id": object_id},
+            {"$set": {
+                "vaccine_name": data["vaccine_name"],
+                "date": data["date"],
+                "available_doses": int(data["available_doses"]),
+                "classes": data["classes"].split(",")  # Convert comma-separated string to list
+            }}
+        )
+        return jsonify(msg="Drive updated successfully"), 200
+    except Exception as e:
+        print(f"Error updating drive: {e}")
+        return jsonify(msg="Internal server error"), 500
 
 @drive_bp.route('/<id>', methods=['DELETE'])
 @jwt_required()
@@ -110,7 +124,7 @@ def get_vaccination_drives():
     drives_list = []
     for drive in drives:
         drives_list.append({
-            "_id": str(drive["_id"]),
+            "_id": str(drive["_id"]),  # Convert ObjectId to string
             "vaccine_name": drive["vaccine_name"],
             "date": drive["date"],
             "is_completed": drive.get("is_completed", False)  # Default to False if missing
