@@ -41,7 +41,9 @@ def list_students():
 @role_required('admin')
 def add_student():
     data = request.json
-    # Check if a student with the same student_id already exists
+    # Validate student_id
+    if not data.get("student_id"):
+        return jsonify(msg="Student ID is required"), 400
     if mongo.db.students.find_one({"student_id": data["student_id"]}):
         return jsonify(msg="Student with this ID already exists"), 400
     student = {
@@ -66,13 +68,14 @@ def upload_csv():
     reader = csv.DictReader(stream)
     added = 0
     for row in reader:
-        if not row.get('username') or not row.get('class_grade'):
+        if not row.get('username') or not row.get('class_grade') or not row.get('student_id'):
             continue
-        if mongo.db.students.find_one({"username": row["username"]}):
+        if mongo.db.students.find_one({"student_id": row["student_id"]}):
             continue
         mongo.db.students.insert_one({
             "username": row["username"],
             "class_grade": row["class_grade"],
+            "student_id": row["student_id"],  # Ensure student_id is included
             "is_vaccinated": False
         })
         added += 1
@@ -105,6 +108,10 @@ def vaccinate_student(student_id):
 @role_required('admin')
 def update_student(student_id):
     data = request.json
+
+    # Prevent modification of student_id to null or empty
+    if "student_id" in data and not data["student_id"]:
+        return jsonify({"msg": "Student ID cannot be null or empty"}), 400
 
     # Remove `_id` from the data to prevent modification of the immutable field
     if "_id" in data:

@@ -51,10 +51,13 @@ def create_drive():
 @drive_bp.route('/', methods=['GET'])
 @jwt_required()
 def list_drives():
-    drives = list(mongo.db.vaccination_drives.find({}))
-    for d in drives:
-        d["_id"] = str(d["_id"])  # Convert ObjectId to string
-    return jsonify(drives)
+    drives = mongo.db.vaccination_drives.find()
+    formatted_drives = []
+    for drive in drives:
+        drive["date"] = drive["date"].isoformat()  # Convert to ISO string
+        formatted_drives.append(drive)
+
+    return jsonify(formatted_drives)
 
 @drive_bp.route('/<id>', methods=['PUT'])
 @jwt_required()
@@ -113,3 +116,21 @@ def get_vaccination_drives():
             "is_completed": drive.get("is_completed", False)  # Default to False if missing
         })
     return jsonify(drives_list), 200
+
+@drive_bp.route('/by-class', methods=['GET'])
+@jwt_required()
+@role_required('admin')
+def get_drives_by_class():
+    class_grade = request.args.get("class_grade")
+    if not class_grade:
+        return jsonify(msg="Class grade is required"), 400
+
+    try:
+        # Query drives where the class_grade is included in the classes array
+        drives = list(mongo.db.vaccination_drives.find({"classes": class_grade}))
+        for drive in drives:
+            drive["_id"] = str(drive["_id"])  # Convert ObjectId to string
+        return jsonify(drives), 200
+    except Exception as e:
+        print(f"Error fetching drives: {e}")
+        return jsonify(msg="Internal server error"), 500

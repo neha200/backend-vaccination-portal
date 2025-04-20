@@ -18,9 +18,8 @@ def bulk_upload_users(csv_file):
         for row in reader:
             users.insert_one({
                 "username": row["username"],
-                "password_hash": generate_password_hash(row["password"]),
+                "password": generate_password_hash(row["password"]),
                 "role": row["role"],  # e.g., "admin" or "user"
-                "created_at": datetime.utcnow()  # Add a timestamp for user creation
             })
         print(f"Users from {csv_file} uploaded successfully.")
 
@@ -38,17 +37,16 @@ def bulk_upload_students(csv_file):
                 try:
                     date_of_vaccination = datetime.strptime(row["date_of_vaccination"], '%Y-%m-%d')
                 except ValueError:
-                    print(f"Invalid date format for student {row['name']}: {row['date_of_vaccination']}")
+                    print(f"Invalid date format for student {row['username']}: {row['date_of_vaccination']}")
                     continue  # Skip this record if the date is invalid
 
             students.insert_one({
-                "name": row["name"],
+                "username": row["username"],
                 "class_grade": row["class_grade"],  # e.g., "1A", "CS101"
                 "student_id": row["student_id"],  # Unique 6-character ID
                 "is_vaccinated": row["is_vaccinated"].lower() == "true",  # Convert to boolean
                 "vaccine_name": row["vaccine_name"] if row["vaccine_name"] else None,
                 "date_of_vaccination": date_of_vaccination,  # Parsed date or None
-                "created_at": datetime.utcnow()  # Add a timestamp for student creation
             })
         print(f"Students from {csv_file} uploaded successfully.")
 
@@ -70,15 +68,17 @@ def bulk_upload_vaccination_drives(csv_file):
                     continue  # Skip this record if the date is invalid
 
             # Handle missing or invalid is_completed field
-            is_completed = row.get("is_completed", "false").lower() == "true"
+            is_completed = str(row.get("is_completed", "false")).lower() == "true"
+
+            # Parse the date field from the CSV
+            drive_date = datetime.strptime(row["date"], '%Y-%m-%d') if row["date"].strip() else None
 
             drives.insert_one({
-                "vaccine_name": row["vaccine_name"],  # Name of the vaccine
-                "date": drive_date,  # Parsed date or None
-                "available_doses": int(row["available_doses"]),  # Number of doses available
-                "classes": row["classes"].split(",") if row["classes"] else [],  # Convert to a list of classes
-                "is_completed": is_completed,  # Default to False if missing
-                "created_at": datetime.utcnow()  # Add a timestamp for drive creation
+                "vaccine_name": row["vaccine_name"],
+                "date": drive_date,
+                "available_doses": int(row["available_doses"]),
+                "classes": row["classes"].strip("[]").split(",") if row["classes"] else [],
+                "is_completed": str(row.get("is_completed", "false")).lower() == "true"
             })
         print(f"Vaccination drives from {csv_file} uploaded successfully.")
 

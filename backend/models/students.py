@@ -2,7 +2,7 @@ from db import db
 
 class Students(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
+    username = db.Column(db.String(120), nullable=False)
     class_grade = db.Column(db.String(10), nullable=False)
     student_id = db.Column(db.string(50), unique=True, nullable=False)
     is_vaccinated = db.Column(db.Boolean, default=False)

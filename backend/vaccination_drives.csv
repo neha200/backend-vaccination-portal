@@ -1,6 +1,6 @@
-id,vaccine_name,date,available_doses,classes
-1,COVID-19,2025-05-01,100,5,6,7
-2,Flu,2025-06-15,50,8,9
-3,Hepatitis-B,2025-07-20,75,10,11
-4,COVID-19,2025-08-10,120,12
-5,Polio,2025-09-05,60,5,6
+vaccine_name,date,available_doses,classes,is_completed
+COVID-19,2025-05-01,100,"[5B,6B,7B]",false
+Flu,2025-06-15,50,"[8A,9C]",false
+Hepatitis-B,2025-07-20,75,"[10G,11A]",false
+COVID-19,2025-08-10,120,"[12C]",false
+Polio,2025-09-05,60,"[5M,6N]",false

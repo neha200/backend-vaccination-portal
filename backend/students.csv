@@ -1,6 +1,6 @@
-name,class_grade,student_id,is_vaccinated,vaccine_name,date_of_vaccination
-John Doe,10,STU001,FALSE,, 
-Jane Smith,9,STU002,TRUE,COVID-19,15-04-2025
-Michael Brown,11,STU003,FALSE,, 
-Emily Davis,12,STU004,TRUE,Flu,10-03-2025
-William Jones,10,STU005,FALSE,, 
+username,class_grade,student_id,is_vaccinated,vaccine_name,date_of_vaccination
+John Doe,10B,STU001,FALSE,, 
+Jane Smith,9V,STU002,TRUE,COVID-19,2025-04-15
+Michael Brown,11F,STU003,FALSE,, 
+Emily Davis,12G,STU004,TRUE,Flu,2025-03-10
+William Jones,10K,STU005,FALSE,, 
