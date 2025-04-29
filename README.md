@@ -119,8 +119,11 @@ backend/
 ### **Students**
 - `GET /students`: List all students.
 - `POST /students`: Add a new student.
+- `PUT /students/<student_id>`: Update a student.
+- `Delete /students/<student_id>`: Delete a student.
 - `POST /students/bulk`: Bulk upload students via CSV.
-- `PUT /students/<id>/vaccinate`: Mark a student as vaccinated.
+- `PUT /students/<student_id>/vaccinate`: Mark a student as vaccinated.
+- `GET /students/<student_id>`: Get drives scheduled for a students class.
 
 ### **Vaccination Drives**
 - `GET /drives`: List all drives.
@@ -128,9 +131,13 @@ backend/
 - `PUT /drives/<id>`: Update a drive.
 - `DELETE /drives/<id>`: Delete a drive.
 - `GET /drives/by-class`: Filter drives for student to register based on class
-
+- `GET /drives/vaccination_drives`: Fetches vaccination drives for analytics which are later filtered according to not done.
+  
 ### **Analytics**
 - `GET /analytics`: Fetch dashboard analytics.
+
+### **Reports**
+- `GET /students`: Fetched students data and internally does a filtering
 
 ---
 
